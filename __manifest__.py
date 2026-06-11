@@ -1,15 +1,15 @@
 {
     "name": "IA Treasury Control (MCP)",
     "version": "18.0.1.0.0",
-    "summary": "Agente IA para tesorería, fiscal y facturas vía Claude MCP",
+    "summary": "AI agent for treasury, tax, invoices and timesheets via Claude MCP",
     "description": """
-Conecta tu Odoo con Claude.ai para gestionar tesorería, fiscal y facturas
-mediante lenguaje natural.
+Connect your Odoo to Claude.ai and manage treasury, taxes, invoices and
+timesheets using plain language.
 
-La lógica de los agentes se ejecuta de forma segura en los servidores de Uniasser.
-Compatible con Odoo 16, 17, 18, 19 y Odoo.sh.
+Agent logic runs securely on Uniasser's servers. Compatible with Odoo 16,
+17, 18, 19 and Odoo.sh.
 
-Requiere licencia SaaS: https://apps.uniasser.net
+Requires a SaaS license: https://apps.uniasser.net
     """,
     "author": "Uniasser",
     "website": "https://apps.uniasser.net",
@@ -24,4 +24,5 @@ Requiere licencia SaaS: https://apps.uniasser.net
     "application": True,
     "installable": True,
     "auto_install": False,
+    "support": "soporte@uniasser.com",
 }

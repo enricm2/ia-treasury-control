@@ -8,50 +8,50 @@
             <xpath expr="//form" position="inside">
                 <app string="IA Treasury Control" name="ia_agents_treasury_control" groups="base.group_system">
 
-                    <!-- Licencia -->
-                    <block title="Licencia SaaS">
-                        <setting string="Clave de licencia">
+                    <!-- License -->
+                    <block title="SaaS License">
+                        <setting string="License key">
                             <field name="iatc_license_key" password="True"/>
                             <div class="text-muted">
-                                Formato: XXXX-XXXX-XXXX-XXXX · Adquiere tu licencia en
+                                Format: XXXX-XXXX-XXXX-XXXX · Get your license at
                                 <a href="https://apps.uniasser.net" target="_blank">apps.uniasser.net</a>
                             </div>
                         </setting>
-                        <setting string="Estado de la licencia">
+                        <setting string="License status">
                             <field name="iatc_license_status" readonly="1"/>
                             <field name="iatc_license_customer" readonly="1"
                                    invisible="iatc_license_customer == ''"/>
                             <field name="iatc_license_expires" readonly="1"
                                    invisible="iatc_license_expires == ''"/>
                             <button name="action_validate_license" type="object"
-                                    string="Validar licencia" class="btn-secondary mt8"/>
+                                    string="Validate license" class="btn-secondary mt8"/>
                         </setting>
                     </block>
 
-                    <!-- Conexión Odoo (para el servidor remoto) -->
-                    <block title="Conexión con Odoo (para agentes remotos)">
+                    <!-- Odoo connection for remote agents -->
+                    <block title="Odoo Connection (for remote agents)">
                         <setting string="Odoo API Key"
-                                 help="Clave de API para que el servidor de Uniasser pueda leer y escribir en tu Odoo. Genérala en: Ajustes → Usuarios → tu usuario → Claves de API.">
+                                 help="API key so the Uniasser server can read/write your Odoo. Generate it at: Settings → Users → your user → API Keys → New Key.">
                             <field name="iatc_odoo_api_key" password="True"/>
                         </setting>
-                        <setting string="Usuario Odoo (login)"
-                                 help="Login del usuario cuya API Key has generado. Normalmente 'admin'.">
+                        <setting string="Odoo user (login)"
+                                 help="Login of the user whose API Key you generated. Usually 'admin'. On Odoo.sh use the user's email address.">
                             <field name="iatc_odoo_login"/>
                         </setting>
                     </block>
 
-                    <!-- MCP -->
-                    <block title="Servidor MCP (Claude.ai)">
-                        <setting string="Token MCP (OAuth Client Secret)"
-                                 help="Pega este valor en 'OAuth Client Secret' al añadir el servidor MCP en claude.ai.">
+                    <!-- MCP Server -->
+                    <block title="MCP Server (Claude.ai)">
+                        <setting string="MCP Token (OAuth Client Secret)"
+                                 help="Paste this value in 'OAuth Client Secret' when adding the MCP server in claude.ai.">
                             <field name="iatc_mcp_secret_token" password="True"/>
                             <button name="action_generate_mcp_token" type="object"
-                                    string="Regenerar token" class="btn-secondary mt8"/>
+                                    string="Regenerate token" class="btn-secondary mt8"/>
                         </setting>
-                        <setting string="URL servidor MCP">
+                        <setting string="MCP Server URL">
                             <field name="iatc_mcp_endpoint_url" readonly="1"/>
                             <div class="text-muted">
-                                Usa esta URL al configurar el servidor MCP en claude.ai.
+                                Use this URL when configuring the MCP server in claude.ai.
                             </div>
                         </setting>
                         <setting string="OAuth Client ID">
@@ -59,13 +59,13 @@
                         </setting>
                     </block>
 
-                    <!-- IA -->
-                    <block title="Inteligencia Artificial (Anthropic Claude)">
-                        <setting string="API Key Anthropic"
-                                 help="Clave de Anthropic para informes IA y extracción de facturas. Obtenla en console.anthropic.com. Opcional: sin esta clave el módulo funciona con datos estructurados.">
+                    <!-- AI -->
+                    <block title="Artificial Intelligence (Anthropic Claude)">
+                        <setting string="Anthropic API Key"
+                                 help="Your Anthropic API key for AI-generated reports and invoice OCR. Get it at console.anthropic.com. Optional: without this key the module returns structured data tables instead of narrative reports.">
                             <field name="iatc_anthropic_api_key" password="True"/>
                         </setting>
-                        <setting string="Modelo Claude">
+                        <setting string="Claude model">
                             <field name="iatc_claude_model"/>
                         </setting>
                     </block>
