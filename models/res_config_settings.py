@@ -174,11 +174,11 @@ class ResConfigSettings(models.TransientModel):
                 ("user_id", "=", user.id),
                 ("name", "=", existing_name),
             ]).unlink()
-            # Generar nueva clave
-            key = self.env["res.users.apikeys"].sudo()._generate(
+            # Generar nueva clave (sin sudo: _generate crea la clave para self.env.uid)
+            key = self.env["res.users.apikeys"]._generate(
                 scope="rpc",
                 name=existing_name,
-                user_id=user.id,
+                expiration_date=False,
             )
             # Guardar en config
             icp = self.env["ir.config_parameter"].sudo()
