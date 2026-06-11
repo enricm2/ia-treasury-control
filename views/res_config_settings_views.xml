@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_iatc" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.iatc</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="IA Treasury Control" name="ia_agents_treasury_control" groups="base.group_system">
+
+                    <!-- Licencia -->
+                    <block title="Licencia SaaS">
+                        <setting string="Clave de licencia">
+                            <field name="iatc_license_key" password="True"/>
+                            <div class="text-muted">
+                                Formato: XXXX-XXXX-XXXX-XXXX · Adquiere tu licencia en
+                                <a href="https://apps.uniasser.net" target="_blank">apps.uniasser.net</a>
+                            </div>
+                        </setting>
+                        <setting string="Estado de la licencia">
+                            <field name="iatc_license_status" readonly="1"/>
+                            <field name="iatc_license_customer" readonly="1"
+                                   invisible="iatc_license_customer == ''"/>
+                            <field name="iatc_license_expires" readonly="1"
+                                   invisible="iatc_license_expires == ''"/>
+                            <button name="action_validate_license" type="object"
+                                    string="Validar licencia" class="btn-secondary mt8"/>
+                        </setting>
+                    </block>
+
+                    <!-- Conexión Odoo (para el servidor remoto) -->
+                    <block title="Conexión con Odoo (para agentes remotos)">
+                        <setting string="Odoo API Key"
+                                 help="Clave de API para que el servidor de Uniasser pueda leer y escribir en tu Odoo. Genérala en: Ajustes → Usuarios → tu usuario → Claves de API.">
+                            <field name="iatc_odoo_api_key" password="True"/>
+                        </setting>
+                        <setting string="Usuario Odoo (login)"
+                                 help="Login del usuario cuya API Key has generado. Normalmente 'admin'.">
+                            <field name="iatc_odoo_login"/>
+                        </setting>
+                    </block>
+
+                    <!-- MCP -->
+                    <block title="Servidor MCP (Claude.ai)">
+                        <setting string="Token MCP (OAuth Client Secret)"
+                                 help="Pega este valor en 'OAuth Client Secret' al añadir el servidor MCP en claude.ai.">
+                            <field name="iatc_mcp_secret_token" password="True"/>
+                            <button name="action_generate_mcp_token" type="object"
+                                    string="Regenerar token" class="btn-secondary mt8"/>
+                        </setting>
+                        <setting string="URL servidor MCP">
+                            <field name="iatc_mcp_endpoint_url" readonly="1"/>
+                            <div class="text-muted">
+                                Usa esta URL al configurar el servidor MCP en claude.ai.
+                            </div>
+                        </setting>
+                        <setting string="OAuth Client ID">
+                            <field name="iatc_mcp_oauth_client_id" readonly="1"/>
+                        </setting>
+                    </block>
+
+                    <!-- IA -->
+                    <block title="Inteligencia Artificial (Anthropic Claude)">
+                        <setting string="API Key Anthropic"
+                                 help="Clave de Anthropic para informes IA y extracción de facturas. Obtenla en console.anthropic.com. Opcional: sin esta clave el módulo funciona con datos estructurados.">
+                            <field name="iatc_anthropic_api_key" password="True"/>
+                        </setting>
+                        <setting string="Modelo Claude">
+                            <field name="iatc_claude_model"/>
+                        </setting>
+                    </block>
+
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>
