@@ -211,6 +211,17 @@ _TOOLS = [
         },
     },
     {
+        "name": "get_treasury_forecast",
+        "description": (
+            "Previsión de tesorería a 30, 60 y 90 días. Combina las facturas pendientes "
+            "de cobro y pago con el ritmo histórico de ventas y compras de los últimos "
+            "6 meses para proyectar el saldo de caja en cada horizonte. Úsalo cuando "
+            "el usuario pregunte por previsión, forecast, liquidez futura o cash flow "
+            "a medio plazo."
+        ),
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
         "name": "health_check",
         "description": "Comprueba que el servidor MCP y la conexión con Odoo están operativos.",
         "inputSchema": {"type": "object", "properties": {}},
