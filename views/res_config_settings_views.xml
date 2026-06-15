@@ -3,6 +3,7 @@
     <record id="res_config_settings_view_form_iatc" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.iatc</field>
         <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
         <field name="priority">100</field>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
@@ -20,9 +21,9 @@
                         <setting string="License status">
                             <field name="iatc_license_status" readonly="1"/>
                             <field name="iatc_license_customer" readonly="1"
-                                   invisible="iatc_license_customer == ''"/>
+                                   attrs="{'invisible': [('iatc_license_customer', '=', '')]}"/>
                             <field name="iatc_license_expires" readonly="1"
-                                   invisible="iatc_license_expires == ''"/>
+                                   attrs="{'invisible': [('iatc_license_expires', '=', '')]}"/>
                             <button name="action_validate_license" type="object"
                                     string="Validate license" class="btn-secondary mt8"/>
                         </setting>
@@ -47,9 +48,9 @@
                     </block>
 
                     <!-- MCP Server -->
-                    <block title="MCP Server (Claude.ai)">
+                    <block title="MCP Server">
                         <setting string="MCP Token (OAuth Client Secret)"
-                                 help="Paste this value in 'OAuth Client Secret' when adding the MCP server in claude.ai.">
+                                 help="Paste this value in 'OAuth Client Secret' when adding the MCP server in claude.ai or Gemini CLI.">
                             <field name="iatc_mcp_secret_token" password="True"/>
                             <button name="action_generate_mcp_token" type="object"
                                     string="Regenerate token" class="btn-secondary mt8"/>
@@ -57,7 +58,7 @@
                         <setting string="MCP Server URL">
                             <field name="iatc_mcp_endpoint_url" readonly="1"/>
                             <div class="text-muted">
-                                Use this URL when configuring the MCP server in claude.ai.
+                                Use this URL when configuring the MCP server in your AI client.
                             </div>
                         </setting>
                         <setting string="OAuth Client ID">
@@ -65,14 +66,51 @@
                         </setting>
                     </block>
 
-                    <!-- AI -->
-                    <block title="Artificial Intelligence (Anthropic Claude)">
-                        <setting string="Anthropic API Key"
-                                 help="Your Anthropic API key for AI-generated reports and invoice OCR. Get it at console.anthropic.com. Optional: without this key the module returns structured data tables instead of narrative reports.">
+                    <!-- AI Provider -->
+                    <block title="Artificial Intelligence">
+                        <setting string="Active AI provider"
+                                 help="Choose which AI provider generates reports and processes invoices. Fill the corresponding API key below.">
+                            <field name="iatc_llm_provider"/>
+                        </setting>
+
+                        <!-- Claude -->
+                        <setting string="Anthropic API Key (Claude)"
+                                 help="Get it at console.anthropic.com. Required if provider is Claude.">
                             <field name="iatc_anthropic_api_key" password="True"/>
                         </setting>
-                        <setting string="Claude model">
+                        <setting string="Claude model"
+                                 attrs="{'invisible': [('iatc_llm_provider', '!=', 'claude')]}">
                             <field name="iatc_claude_model"/>
+                        </setting>
+
+                        <!-- Gemini -->
+                        <setting string="Gemini API Key (Google)"
+                                 help="Get it at aistudio.google.com. Free tier available. Required if provider is Gemini.">
+                            <field name="iatc_gemini_api_key" password="True"/>
+                        </setting>
+                        <setting string="Gemini model"
+                                 attrs="{'invisible': [('iatc_llm_provider', '!=', 'gemini')]}">
+                            <field name="iatc_gemini_model"/>
+                        </setting>
+
+                        <!-- OpenAI -->
+                        <setting string="OpenAI API Key (ChatGPT)"
+                                 help="Get it at platform.openai.com. Required if provider is ChatGPT.">
+                            <field name="iatc_openai_api_key" password="True"/>
+                        </setting>
+                        <setting string="OpenAI model"
+                                 attrs="{'invisible': [('iatc_llm_provider', '!=', 'openai')]}">
+                            <field name="iatc_openai_model"/>
+                        </setting>
+
+                        <!-- Grok -->
+                        <setting string="Grok API Key (xAI)"
+                                 help="Get it at console.x.ai. Required if provider is Grok.">
+                            <field name="iatc_grok_api_key" password="True"/>
+                        </setting>
+                        <setting string="Grok model"
+                                 attrs="{'invisible': [('iatc_llm_provider', '!=', 'grok')]}">
+                            <field name="iatc_grok_model"/>
                         </setting>
                     </block>
 

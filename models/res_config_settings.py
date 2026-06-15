@@ -71,20 +71,66 @@ class ResConfigSettings(models.TransientModel):
         ),
     )
 
-    # ── Anthropic API Key ─────────────────────────────────────────────────────
+    # ── AI Provider ───────────────────────────────────────────────────────────
+    iatc_llm_provider = fields.Selection(
+        selection=[
+            ("claude", "Claude (Anthropic)"),
+            ("gemini", "Gemini (Google)"),
+            ("openai", "ChatGPT (OpenAI)"),
+            ("grok", "Grok (xAI)"),
+        ],
+        string="Active AI provider",
+        config_parameter=f"{_P}llm_provider",
+        default="claude",
+        help="Choose which AI provider generates reports and processes invoices.",
+    )
+
+    # ── Claude ────────────────────────────────────────────────────────────────
     iatc_anthropic_api_key = fields.Char(
         string="Anthropic API Key (Claude)",
         config_parameter=f"{_P}anthropic_api_key",
-        help=(
-            "Your Anthropic API key for AI-generated narrative reports. "
-            "Get it at console.anthropic.com. "
-            "Optional: without this key the module returns structured data tables."
-        ),
+        help="Get it at console.anthropic.com. Required if provider is Claude.",
     )
     iatc_claude_model = fields.Char(
         string="Claude model",
         config_parameter=f"{_P}claude_model",
         default="claude-sonnet-4-6",
+    )
+
+    # ── Gemini ────────────────────────────────────────────────────────────────
+    iatc_gemini_api_key = fields.Char(
+        string="Gemini API Key (Google)",
+        config_parameter=f"{_P}gemini_api_key",
+        help="Get it at aistudio.google.com. Free tier available. Required if provider is Gemini.",
+    )
+    iatc_gemini_model = fields.Char(
+        string="Gemini model",
+        config_parameter=f"{_P}gemini_model",
+        default="gemini-2.0-flash",
+    )
+
+    # ── OpenAI ────────────────────────────────────────────────────────────────
+    iatc_openai_api_key = fields.Char(
+        string="OpenAI API Key (ChatGPT)",
+        config_parameter=f"{_P}openai_api_key",
+        help="Get it at platform.openai.com. Required if provider is ChatGPT.",
+    )
+    iatc_openai_model = fields.Char(
+        string="OpenAI model",
+        config_parameter=f"{_P}openai_model",
+        default="gpt-4o",
+    )
+
+    # ── Grok ──────────────────────────────────────────────────────────────────
+    iatc_grok_api_key = fields.Char(
+        string="Grok API Key (xAI)",
+        config_parameter=f"{_P}grok_api_key",
+        help="Get it at console.x.ai. Required if provider is Grok.",
+    )
+    iatc_grok_model = fields.Char(
+        string="Grok model",
+        config_parameter=f"{_P}grok_model",
+        default="grok-3",
     )
 
     # ── Computed ──────────────────────────────────────────────────────────────

@@ -34,6 +34,33 @@ for VERSION in 16 17 18 19; do
     # Actualizar versión en __manifest__.py
     sed -i "s/\"version\": \"[0-9]*\\.0\\.1\\.0\\.0\"/\"version\": \"${FULL_VER}\"/" "$TMP/__manifest__.py"
 
+    # Odoo 17+: convertir attrs= (sintaxis Odoo 16) → invisible= (sintaxis 17+)
+    # En Odoo 18+ el atributo attrs produce un error en lugar de warning
+    if [ "$VERSION" -ge 17 ]; then
+        python3 - "$TMP/views/res_config_settings_views.xml" <<'PYEOF'
+import re, sys
+
+path = sys.argv[1]
+content = open(path).read()
+
+# Convierte attrs="{'invisible': [('field', '=', '')]}"  → invisible="field == ''"
+# Convierte attrs="{'invisible': [('field', '!=', 'val')]}" → invisible="field != 'val'"
+def convert_attrs(m):
+    field = m.group(1)
+    op = m.group(2)
+    val = m.group(3)
+    # Map Odoo domain operators to Python expression operators
+    py_op = {"=": "==", "!=": "!="}.get(op, op)
+    return f"invisible=\"{field} {py_op} '{val}'\""
+
+pattern = r'''attrs="{'invisible': \[\('([^']+)', '([^']+)', '([^']*)'\)\]}"'''
+content = re.sub(pattern, convert_attrs, content)
+
+open(path, "w").write(content)
+print(f"    → attrs convertidos a invisible= para Odoo {sys.argv[0] if False else ''}")
+PYEOF
+    fi
+
     # Empaquetar
     cd "$DIST_DIR"
     mv "$TMP" "${MODULE_NAME}"
