@@ -31,8 +31,8 @@ for VERSION in 16 17 18 19; do
     find "$TMP" -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
     find "$TMP" -name "*.pyc" -delete 2>/dev/null || true
 
-    # Actualizar versión en __manifest__.py
-    sed -i "s/\"version\": \"[0-9]*\\.0\\.1\\.0\\.0\"/\"version\": \"${FULL_VER}\"/" "$TMP/__manifest__.py"
+    # Actualizar versión en __manifest__.py (cualquier versión X.0.Y.Z.W)
+    sed -i "s/\"version\": \"[0-9]*\\.0\\.[0-9]*\\.[0-9]*\\.[0-9]*\"/\"version\": \"${FULL_VER}\"/" "$TMP/__manifest__.py"
 
     # Odoo 17+: convertir attrs= (sintaxis Odoo 16) → invisible= (sintaxis 17+)
     # En Odoo 18+ el atributo attrs produce un error en lugar de warning
