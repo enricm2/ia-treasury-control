@@ -696,3 +696,41 @@ class IATCMCPController(http.Controller):
             }), use_sse)
 
         return _mcp_resp(_rpc_error(req_id, -32601, f"Método no soportado: {method}"), use_sse)
+
+    # ── WhatsApp webhook (Twilio directo) ─────────────────────────────────────
+
+    @http.route("/iatc/webhook/whatsapp-twilio", auth="none", csrf=False,
+                methods=["POST"], type="http", save_session=False)
+    def whatsapp_twilio_webhook(self, **_kwargs):
+        import urllib.parse as _urlparse
+
+        raw = request.httprequest.get_data()
+        params = {k: v[0] for k, v in _urlparse.parse_qs(raw.decode("utf-8", errors="replace")).items()}
+        from_number = params.get("From", "").strip()
+        body = params.get("Body", "").strip()
+
+        def _twiml(text: str) -> Response:
+            safe = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            return Response(
+                f"<Response><Message>{safe}</Message></Response>",
+                status=200,
+                headers={"Content-Type": "application/xml; charset=utf-8"},
+            )
+
+        if not from_number or not body:
+            return _twiml("Error: mensaje vacío.")
+
+        env, _cr = _open_env()
+        try:
+            result = _call_remote(env, "process_whatsapp", {
+                "message": body,
+                "from_number": from_number,
+            })
+        except Exception as exc:
+            _logger.error("IATC WhatsApp webhook error: %s", exc)
+            result = "Lo siento, ha ocurrido un error procesando tu mensaje. Inténtalo de nuevo."
+        finally:
+            if _cr is not None:
+                _cr.close()
+
+        return _twiml(result)

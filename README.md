@@ -115,6 +115,61 @@ Without this key, agents return structured data tables. With it, you get AI-gene
 
 ---
 
+### Step 7 (Optional) — Set up WhatsApp with Twilio
+
+This lets your team query the financial agents by sending WhatsApp messages — no Claude.ai app needed.
+
+#### Prerequisites
+
+- A [Twilio](https://www.twilio.com) account (free trial available)
+- Your Odoo instance reachable from the internet with a valid SSL certificate (HTTPS)
+
+#### 7.1 — Get your Twilio credentials
+
+1. Log in at [console.twilio.com](https://console.twilio.com)
+2. On the main dashboard, note down:
+   - **Account SID** — starts with `AC...`
+   - **Auth Token** — click the eye icon to reveal it
+
+#### 7.2 — Enable the WhatsApp Sandbox (for testing)
+
+1. In Twilio console, go to **Messaging → Try it out → Send a WhatsApp message**
+2. Follow the instructions to join the sandbox by sending `join <your-code>` to the Twilio number
+3. This number (format `whatsapp:+14155238886`) is your sender number during testing
+
+> For production, request a dedicated WhatsApp-enabled Twilio number.
+
+#### 7.3 — Configure Twilio credentials in Odoo
+
+1. Go to **Settings → IA Treasury Control → WhatsApp (Twilio)**
+2. Fill in:
+   - **Twilio Account SID**: the `AC...` value from step 7.1
+   - **Twilio Auth Token**: the auth token from step 7.1
+   - **Twilio WhatsApp number**: your sender number (e.g. `whatsapp:+14155238886`)
+3. Click **Save** — the **Webhook URL for Twilio** field will auto-populate with your Odoo URL
+
+#### 7.4 — Configure the webhook in Twilio
+
+1. Copy the **Webhook URL for Twilio** shown in Odoo settings
+   - It looks like: `https://yourodoo.com/iatc/webhook/whatsapp-twilio`
+2. In Twilio console, go to **Messaging → Active numbers** (or **Sandbox settings** if testing)
+3. In the field **"A message comes in"**, select **Webhook** and paste the URL
+4. Method: **HTTP POST**
+5. Click **Save**
+
+#### 7.5 — Test it
+
+Send a WhatsApp message to your Twilio number:
+```
+¿Cuál es el estado de la tesorería esta semana?
+```
+
+You should receive the treasury report directly in WhatsApp within a few seconds.
+
+> **Note:** The webhook processes messages synchronously. Complex queries (reconciliation, email invoice processing) may take 10–30 seconds — this is normal.
+
+---
+
 ## Usage — Available Tools
 
 Once connected, Claude.ai has access to these tools:
