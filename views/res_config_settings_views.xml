@@ -5,8 +5,9 @@
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//form" position="inside">
-                <app string="IA Treasury Control" name="ia_agents_treasury_control" groups="base.group_system">
+            <xpath expr="//app[@name='account']" position="after">
+                <app data-string="IA Treasury Control" string="IA Treasury Control"
+                     name="ia_agents_treasury_control" groups="base.group_system">
 
                     <!-- License -->
                     <block title="SaaS License">
@@ -71,8 +72,6 @@
                                  help="Choose which AI provider generates reports and processes invoices. Fill the corresponding API key below.">
                             <field name="iatc_llm_provider"/>
                         </setting>
-
-                        <!-- Claude -->
                         <setting string="Anthropic API Key (Claude)"
                                  help="Get it at console.anthropic.com. Required if provider is Claude.">
                             <field name="iatc_anthropic_api_key" password="True"/>
@@ -81,8 +80,6 @@
                                  attrs="{'invisible': [('iatc_llm_provider', '!=', 'claude')]}">
                             <field name="iatc_claude_model"/>
                         </setting>
-
-                        <!-- Gemini -->
                         <setting string="Gemini API Key (Google)"
                                  help="Get it at aistudio.google.com. Free tier available. Required if provider is Gemini.">
                             <field name="iatc_gemini_api_key" password="True"/>
@@ -91,8 +88,6 @@
                                  attrs="{'invisible': [('iatc_llm_provider', '!=', 'gemini')]}">
                             <field name="iatc_gemini_model"/>
                         </setting>
-
-                        <!-- OpenAI -->
                         <setting string="OpenAI API Key (ChatGPT)"
                                  help="Get it at platform.openai.com. Required if provider is ChatGPT.">
                             <field name="iatc_openai_api_key" password="True"/>
@@ -101,8 +96,6 @@
                                  attrs="{'invisible': [('iatc_llm_provider', '!=', 'openai')]}">
                             <field name="iatc_openai_model"/>
                         </setting>
-
-                        <!-- Grok -->
                         <setting string="Grok API Key (xAI)"
                                  help="Get it at console.x.ai. Required if provider is Grok.">
                             <field name="iatc_grok_api_key" password="True"/>
@@ -128,11 +121,8 @@
                             <field name="iatc_twilio_whatsapp_from"/>
                         </setting>
                         <setting string="Webhook URL for Twilio"
-                                 help="Copy this URL and paste it in Twilio console → Messaging → Active numbers → WhatsApp → A message comes in.">
+                                 help="Copy this URL and configure it in your Twilio WhatsApp sandbox.">
                             <field name="iatc_whatsapp_webhook_url" readonly="1"/>
-                            <div class="text-muted">
-                                Copy this URL and configure it in your Twilio WhatsApp sandbox or number.
-                            </div>
                         </setting>
                     </block>
 
