@@ -135,23 +135,23 @@ class ResConfigSettings(models.TransientModel):
 
     # ── WhatsApp (Twilio) ─────────────────────────────────────────────────────
     iatc_twilio_account_sid = fields.Char(
-        string="Twilio Account SID",
+        string="Account SID",
         config_parameter=f"{_P}twilio_account_sid",
         help="From Twilio console → Account Info. Starts with AC...",
     )
     iatc_twilio_auth_token = fields.Char(
-        string="Twilio Auth Token",
+        string="Auth Token",
         config_parameter=f"{_P}twilio_auth_token",
         help="From Twilio console → Account Info.",
     )
     iatc_twilio_whatsapp_from = fields.Char(
-        string="Twilio WhatsApp number",
+        string="WhatsApp sender number",
         config_parameter=f"{_P}twilio_whatsapp_from",
         default="whatsapp:+14155238886",
-        help="Format: whatsapp:+1XXXXXXXXXX  (your Twilio WhatsApp sender number)",
+        help="Format: whatsapp:+1XXXXXXXXXX",
     )
     iatc_whatsapp_webhook_url = fields.Char(
-        string="WhatsApp Webhook URL",
+        string="Webhook URL",
         compute="_compute_whatsapp_webhook",
         store=False,
     )
