@@ -152,8 +152,7 @@ class ResConfigSettings(models.TransientModel):
     )
     iatc_whatsapp_webhook_url = fields.Char(
         string="Webhook URL",
-        compute="_compute_whatsapp_webhook",
-        store=False,
+        readonly=True,
     )
 
     # ── Computed ──────────────────────────────────────────────────────────────
@@ -168,15 +167,6 @@ class ResConfigSettings(models.TransientModel):
         for rec in self:
             rec.iatc_mcp_endpoint_url = f"{base_url}/mcp"
             rec.iatc_mcp_oauth_client_id = db_name
-
-    @api.depends("iatc_mcp_secret_token")
-    def _compute_whatsapp_webhook(self):
-        icp = self.env["ir.config_parameter"].sudo()
-        base_url = icp.get_param("web.base.url", "").rstrip("/")
-        if base_url.startswith("http://"):
-            base_url = "https://" + base_url[7:]
-        for rec in self:
-            rec.iatc_whatsapp_webhook_url = f"{base_url}/iatc/webhook/whatsapp-twilio"
 
     @api.depends("iatc_license_key")
     def _compute_license_status(self):
@@ -210,6 +200,17 @@ class ResConfigSettings(models.TransientModel):
                 rec.iatc_license_status = "❌ Inactive or expired"
                 rec.iatc_license_customer = ""
                 rec.iatc_license_expires = ""
+
+    # ── get/set values ────────────────────────────────────────────────────────
+
+    def get_values(self):
+        res = super().get_values()
+        icp = self.env["ir.config_parameter"].sudo()
+        base_url = icp.get_param("web.base.url", "").rstrip("/")
+        if base_url.startswith("http://"):
+            base_url = "https://" + base_url[7:]
+        res["iatc_whatsapp_webhook_url"] = f"{base_url}/iatc/webhook/whatsapp-twilio"
+        return res
 
     # ── Actions ───────────────────────────────────────────────────────────────
 
