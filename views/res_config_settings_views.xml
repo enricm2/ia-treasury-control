@@ -5,7 +5,7 @@
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//app[@name='account']" position="after">
+            <xpath expr="//div[@class='settings']" position="inside">
                 <app data-string="IA Treasury Control" string="IA Treasury Control"
                      name="ia_agents_treasury_control" groups="base.group_system">
 

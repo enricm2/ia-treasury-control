@@ -13,7 +13,7 @@ echo "🏗  IA Treasury Control — Build ZIPs (thin client)"
 echo ""
 
 for VERSION in 16 17 18 19; do
-    FULL_VER="${VERSION}.0.1.4.0"
+    FULL_VER="${VERSION}.0.1.5.0"
     ZIP_NAME="${MODULE_NAME}_odoo${VERSION}_v${FULL_VER}.zip"
     TMP="$DIST_DIR/${MODULE_NAME}_build_tmp"
 
