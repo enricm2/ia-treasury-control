@@ -254,11 +254,19 @@ class ResConfigSettings(models.TransientModel):
                 ("name", "=", existing_name),
             ]).unlink()
             # Generar nueva clave (sin sudo: _generate crea la clave para self.env.uid)
-            key = self.env["res.users.apikeys"]._generate(
-                scope="rpc",
-                name=existing_name,
-                expiration_date=False,
-            )
+            # Odoo 16 signature: _generate(scope, name)
+            # Odoo 17+ signature: _generate(scope, name, expiration_date=False)
+            try:
+                key = self.env["res.users.apikeys"]._generate(
+                    scope="rpc",
+                    name=existing_name,
+                    expiration_date=False,
+                )
+            except TypeError:
+                key = self.env["res.users.apikeys"]._generate(
+                    scope="rpc",
+                    name=existing_name,
+                )
             # Guardar en config
             icp = self.env["ir.config_parameter"].sudo()
             icp.set_param(f"{_P}odoo_api_key", key)
