@@ -702,17 +702,22 @@ class IATCMCPController(http.Controller):
     @http.route("/iatc/webhook/whatsapp-twilio", auth="none", csrf=False,
                 methods=["POST"], type="http", save_session=False)
     def whatsapp_twilio_webhook(self, **kwargs):
-        # Odoo already parses form-data into kwargs; fall back to raw body only if needed
-        from_number = (kwargs.get("From") or "").strip()
-        body = (kwargs.get("Body") or "").strip()
+        import threading
+        import urllib.parse as _urlparse
+
+        # Try all sources: werkzeug form, kwargs, raw body
+        form = request.httprequest.form
+        from_number = (form.get("From") or kwargs.get("From") or "").strip()
+        body = (form.get("Body") or kwargs.get("Body") or "").strip()
 
         if not from_number or not body:
-            import urllib.parse as _urlparse
-            raw = request.httprequest.get_data()
+            raw = request.httprequest.get_data(cache=False)
             if raw:
                 params = {k: v[0] for k, v in _urlparse.parse_qs(raw.decode("utf-8", errors="replace")).items()}
                 from_number = from_number or params.get("From", "").strip()
                 body = body or params.get("Body", "").strip()
+
+        _logger.info("IATC WhatsApp webhook: From=%r Body=%r", from_number, body[:50] if body else "")
 
         def _twiml(text: str) -> Response:
             safe = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -723,20 +728,146 @@ class IATCMCPController(http.Controller):
             )
 
         if not from_number or not body:
-            _logger.warning("IATC WhatsApp webhook: empty From=%r Body=%r kwargs=%r", from_number, body, list(kwargs.keys()))
             return _twiml("Error: mensaje vacío.")
 
-        env, _cr = _open_env()
-        try:
-            result = _call_remote(env, "process_whatsapp", {
-                "message": body,
-                "from_number": from_number,
-            })
-        except Exception as exc:
-            _logger.error("IATC WhatsApp webhook error: %s", exc)
-            result = "Lo siento, ha ocurrido un error procesando tu mensaje. Inténtalo de nuevo."
-        finally:
-            if _cr is not None:
-                _cr.close()
+        # ── Leer credenciales via cursor directo (fiable en auth="none") ──
+        def _read_params():
+            """Lee ir.config_parameter con cursor directo de Odoo Registry."""
+            keys = [
+                f"{_P}twilio_account_sid", f"{_P}twilio_auth_token",
+                f"{_P}twilio_whatsapp_from", f"{_P}license_key",
+                f"{_P}odoo_api_key", f"{_P}odoo_login",
+                f"{_P}anthropic_api_key", f"{_P}claude_model",
+                "web.base.url",
+            ]
+            defaults = {
+                f"{_P}twilio_whatsapp_from": "whatsapp:+14155238886",
+                f"{_P}odoo_login": "admin",
+                f"{_P}claude_model": "claude-sonnet-4-6",
+                "web.base.url": "",
+            }
+            result = dict(defaults)
+            try:
+                import odoo.service.db as _db_svc
+                valid_dbs = _db_svc.list_dbs(True)
+            except Exception:
+                valid_dbs = []
 
-        return _twiml(result)
+            # Find db that has the module installed
+            target_db = getattr(request, "db", None) or None
+            if not target_db:
+                for cand in valid_dbs:
+                    try:
+                        from odoo.modules.registry import Registry as _Reg
+                        with _Reg(cand).cursor() as _c:
+                            _c.execute(
+                                "SELECT 1 FROM ir_module_module "
+                                "WHERE name='ia_agents_treasury_control' AND state='installed'"
+                            )
+                            if _c.fetchone():
+                                target_db = cand
+                                break
+                    except Exception:
+                        continue
+
+            if target_db:
+                try:
+                    from odoo.modules.registry import Registry as _Reg
+                    with _Reg(target_db).cursor() as _c:
+                        placeholders = ",".join(["%s"] * len(keys))
+                        _c.execute(
+                            f"SELECT key, value FROM ir_config_parameter WHERE key IN ({placeholders})",
+                            keys,
+                        )
+                        for row in _c.fetchall():
+                            result[row[0]] = row[1]
+                except Exception as exc:
+                    _logger.error("IATC WhatsApp: error reading config from %s: %s", target_db, exc)
+
+            result["_db"] = target_db or ""
+            _logger.info("IATC WhatsApp config: db=%s license_key=%r twilio_sid=%r",
+                         result["_db"],
+                         result.get(f"{_P}license_key", "")[:8],
+                         result.get(f"{_P}twilio_account_sid", "")[:8])
+            return result
+
+        cfg = _read_params()
+        twilio_sid    = cfg.get(f"{_P}twilio_account_sid", "")
+        twilio_token  = cfg.get(f"{_P}twilio_auth_token", "")
+        twilio_from   = cfg.get(f"{_P}twilio_whatsapp_from", "whatsapp:+14155238886")
+        license_key   = cfg.get(f"{_P}license_key", "")
+        odoo_api_key  = cfg.get(f"{_P}odoo_api_key", "")
+        odoo_login    = cfg.get(f"{_P}odoo_login", "admin")
+        anthropic_key = cfg.get(f"{_P}anthropic_api_key", "")
+        claude_model  = cfg.get(f"{_P}claude_model", "claude-sonnet-4-6")
+        odoo_url      = cfg.get("web.base.url", "").rstrip("/")
+        odoo_db       = cfg.get("_db", "")
+
+        def _send_twilio(to: str, text: str) -> None:
+            """Envía un mensaje WhatsApp via Twilio REST API."""
+            if not twilio_sid or not twilio_token:
+                _logger.error("IATC WhatsApp: Twilio SID/Token no configurados")
+                return
+            payload = urllib.parse.urlencode({
+                "From": twilio_from,
+                "To": to,
+                "Body": text[:1500],
+            }).encode()
+            tw_url = f"https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Messages.json"
+            auth = base64.b64encode(f"{twilio_sid}:{twilio_token}".encode()).decode()
+            req = urllib.request.Request(
+                tw_url, data=payload,
+                headers={
+                    "Authorization": f"Basic {auth}",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    _logger.info("IATC WhatsApp sent: %s", resp.status)
+            except Exception as exc:
+                _logger.error("IATC WhatsApp send error: %s", exc)
+
+        def _process_and_reply():
+            """Ejecuta la consulta en segundo plano y responde via Twilio API."""
+            payload = json.dumps({
+                "license_key": license_key,
+                "operation": "process_whatsapp",
+                "odoo_url": odoo_url,
+                "odoo_db": odoo_db,
+                "odoo_login": odoo_login,
+                "odoo_api_key": odoo_api_key,
+                "anthropic_api_key": anthropic_key,
+                "claude_model": claude_model,
+                "params": {"message": body, "from_number": from_number},
+            }).encode("utf-8")
+            req = urllib.request.Request(
+                _AGENTS_EXECUTE, data=payload,
+                headers={"Content-Type": "application/json"}, method="POST",
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=120) as resp:
+                    data = json.loads(resp.read())
+                    result = data.get("result", str(data))
+            except urllib.error.HTTPError as exc:
+                try:
+                    detail = json.loads(exc.read()).get("detail", str(exc))
+                except Exception:
+                    detail = str(exc)
+                _logger.error("IATC WhatsApp remote error: %s", detail)
+                result = "Error al procesar tu consulta. Inténtalo de nuevo."
+            except Exception as exc:
+                _logger.error("IATC WhatsApp connection error: %s", exc)
+                result = "No se pudo conectar con el servidor. Inténtalo más tarde."
+
+            _send_twilio(from_number, result)
+
+        # ── Responder a Twilio inmediatamente (< 5s) y procesar en background ──
+        threading.Thread(target=_process_and_reply, daemon=True).start()
+
+        ack = "⏳ Procesando tu consulta..." if body.lower() not in ("hola", "hi", "help", "ayuda") else (
+            "Hola 👋 Soy tu asistente financiero de Odoo. Puedes preguntarme sobre:\n"
+            "- Informe de tesoreria\n- Saldos bancarios\n- Estado IVA\n- Alertas\n- Facturas"
+        )
+        return _twiml(ack)
