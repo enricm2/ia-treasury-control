@@ -701,13 +701,18 @@ class IATCMCPController(http.Controller):
 
     @http.route("/iatc/webhook/whatsapp-twilio", auth="none", csrf=False,
                 methods=["POST"], type="http", save_session=False)
-    def whatsapp_twilio_webhook(self, **_kwargs):
-        import urllib.parse as _urlparse
+    def whatsapp_twilio_webhook(self, **kwargs):
+        # Odoo already parses form-data into kwargs; fall back to raw body only if needed
+        from_number = (kwargs.get("From") or "").strip()
+        body = (kwargs.get("Body") or "").strip()
 
-        raw = request.httprequest.get_data()
-        params = {k: v[0] for k, v in _urlparse.parse_qs(raw.decode("utf-8", errors="replace")).items()}
-        from_number = params.get("From", "").strip()
-        body = params.get("Body", "").strip()
+        if not from_number or not body:
+            import urllib.parse as _urlparse
+            raw = request.httprequest.get_data()
+            if raw:
+                params = {k: v[0] for k, v in _urlparse.parse_qs(raw.decode("utf-8", errors="replace")).items()}
+                from_number = from_number or params.get("From", "").strip()
+                body = body or params.get("Body", "").strip()
 
         def _twiml(text: str) -> Response:
             safe = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -718,6 +723,7 @@ class IATCMCPController(http.Controller):
             )
 
         if not from_number or not body:
+            _logger.warning("IATC WhatsApp webhook: empty From=%r Body=%r kwargs=%r", from_number, body, list(kwargs.keys()))
             return _twiml("Error: mensaje vacío.")
 
         env, _cr = _open_env()
