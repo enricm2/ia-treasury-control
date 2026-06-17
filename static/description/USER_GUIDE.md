@@ -656,11 +656,13 @@ Tienes instalada una versión anterior del módulo. Actualiza a v1.7.0 o superio
 6. [Connect with Gemini (Google)](#6-connect-with-gemini-google)
 7. [Connect with ChatGPT (OpenAI)](#7-connect-with-chatgpt-openai)
 8. [Connect with WhatsApp (Twilio)](#8-connect-with-whatsapp-twilio)
+8b. [Free Trial & Your Own Anthropic API Key](#8b-free-trial--your-own-anthropic-api-key)
 9. [WhatsApp vs. AI Chat — Capabilities](#9-whatsapp-vs-ai-chat--capabilities)
 10. [Available tools](#10-available-tools)
 11. [Usage examples](#11-usage-examples)
 12. [Auto-install scripts](#12-auto-install-scripts)
 13. [Troubleshooting](#13-troubleshooting)
+14. [Ubuntu Linux 24.04 — Self-hosted notes](#14-ubuntu-linux-2404--self-hosted-notes)
 
 ---
 
@@ -672,7 +674,7 @@ Tienes instalada una versión anterior del módulo. Actualiza a v1.7.0 o superio
 | `account` module | Must be installed (Accounting) |
 | HTTPS access | Your Odoo must be reachable via HTTPS |
 | License | Purchased at [apps.uniasser.net](https://apps.uniasser.net) |
-| AI API key | Anthropic / Google / OpenAI (depending on your chosen provider) |
+| AI API key | **Optional** — a free trial (up to 5 €) is included. See section 8b. |
 
 > ⚠️ **Important:** The module does NOT store accounting data outside your Odoo. All AI logic runs on Uniasser servers using only the data you query in each request.
 
@@ -728,71 +730,99 @@ sudo -u odoo python3 /opt/odoo/odoo-bin -c /etc/odoo.conf \
 
 ## 4. Initial configuration
 
-Go to **Settings → IA Treasury Control** (shown in the Settings sidebar).
+Go to **Settings → IA Treasury Control** (shown in the Settings sidebar). Complete the five fields below in order. Total time: under 5 minutes.
 
-### 4.1 SaaS License
+> ⚠️ **You do NOT need your own AI API key to start.** New installations include a free trial (up to 5 € of AI usage on Uniasser's account). See section 8b for details.
 
-| Field | Value |
-|-------|-------|
-| License key | Your `XXXX-XXXX-XXXX-XXXX` key |
+---
 
-Click **"Validate license"** — you should see ✅ Active with your name.
+### 4.1 License key
 
-### 4.2 Odoo connection (for remote agents)
+| Field | What to do |
+|-------|------------|
+| **License key** | Paste your `XXXX-XXXX-XXXX-XXXX` key (received by email from apps.uniasser.net) |
 
-The module needs an Odoo API Key so that the Uniasser server can read/write your Odoo.
+Click **"Validate license"**. You should see a green ✅ Active confirmation with your account name. If you see an error, check the key format and ensure your Odoo can reach the internet.
 
-**Automatic method (recommended):**
-1. Click **"Generate API Key automatically"**
-2. The key is generated and saved automatically
+---
 
-**Manual method:**
-1. Go to **Settings → Users → your user → API Keys tab → New key**
-2. Name: `IA Treasury Control MCP` · Scope: `RPC`
-3. Copy the key and paste it in the **Odoo API Key** field
-4. In **Odoo user (login)** enter your Odoo user email
+### 4.2 Odoo API Key
 
-### 4.3 MCP Server
+The module needs an Odoo API Key so that Uniasser's AI server can securely query your Odoo data.
 
-| Field | Description |
-|-------|-------------|
-| MCP Token | Auto-generated. Copy it — you will need it in the AI client |
-| MCP Server URL | The URL of your MCP endpoint (e.g. `https://yourodoo.com/mcp`) |
-| OAuth Client ID | Your Odoo database name |
+Click **"Generate API Key automatically"** — the field fills in by itself. Do **not** generate or paste a key manually; the automatic button handles everything correctly.
 
-If the token is not generated, click **"Regenerate token"**.
+---
 
-> 💡 **Note these three values** — you will use them in steps 5, 6 and 7:
-> - MCP Server URL
-> - OAuth Client ID
-> - MCP Token (OAuth Client Secret)
+### 4.3 MCP Token
 
-### 4.4 AI provider
+The MCP Token is generated automatically when the module is installed. If the field is empty, click **"Regenerate token"**.
 
-Choose your provider and fill in its API Key:
+**Copy this value** — you will paste it into your AI client (Claude, etc.) in the next section.
 
-| Provider | Where to get the API Key |
-|----------|--------------------------|
-| **Claude (Anthropic)** | [console.anthropic.com](https://console.anthropic.com) |
-| **Gemini (Google)** | [aistudio.google.com](https://aistudio.google.com) · Free tier available |
-| **ChatGPT (OpenAI)** | [platform.openai.com](https://platform.openai.com) |
-| **Grok (xAI)** | [console.x.ai](https://console.x.ai) |
+---
+
+### 4.4 MCP Server URL and OAuth Client ID
+
+These two fields are filled in automatically:
+
+| Field | Example value | What it is |
+|-------|--------------|------------|
+| **MCP Server URL** | `https://yourodoo.com/mcp` | The endpoint your AI client connects to |
+| **OAuth Client ID** | `mycompany_prod` | Your Odoo database name |
+
+**Copy both values** — you will need them when setting up Claude or another AI client.
+
+---
+
+### 4.5 Anthropic API Key (optional — skip if using free trial)
+
+| Field | What to do |
+|-------|------------|
+| **Anthropic API Key** | Leave **blank** to use the free trial. Fill in only if you have your own key (see section 8b). |
+
+Leave this field empty for now. The free trial (up to 5 € of AI usage) is used automatically.
+
+Click **Save** when all fields are filled in.
+
+---
+
+**Summary of what you need to copy before moving on:**
+
+| Value | Where to copy from |
+|-------|--------------------|
+| **MCP Token** | Settings → IA Treasury Control → MCP Token field |
+| **MCP Server URL** | Settings → IA Treasury Control → MCP Server URL field |
+| **OAuth Client ID** | Settings → IA Treasury Control → OAuth Client ID field |
 
 ---
 
 ## 5. Connect with Claude (claude.ai)
 
-### On Claude.ai (web)
+### On Claude.ai web — step by step
 
-1. Go to **claude.ai → Settings → Integrations → Add MCP Server**
-2. Fill in:
-   - **Name:** `Odoo Treasury` (or any name you prefer)
-   - **URL:** the value of **MCP Server URL** (e.g. `https://yourodoo.com/mcp`)
-   - **Authentication:** OAuth 2.0
-   - **Client ID:** the value of **OAuth Client ID** (your DB name)
-   - **Client Secret:** the value of **MCP Token**
-3. Click **Save** then **Connect**
-4. Authorise the connection when Odoo prompts you
+Before you start, make sure you have these three values from section 4:
+- **MCP Server URL** (e.g. `https://yourodoo.com/mcp`)
+- **OAuth Client ID** (your database name)
+- **MCP Token**
+
+**Steps:**
+
+1. Go to **claude.ai** and log in
+2. Click **Settings** (bottom-left of the screen)
+3. Click **Integrations** in the left menu
+4. Click **Add integration**
+5. Fill in:
+   - **Name:** `Odoo Treasury`
+   - **URL:** paste your **MCP Server URL**
+6. Click **Save** — the integration appears in the list
+7. In any chat, click the **🔌 plug icon** (bottom of the message box) → select **Odoo Treasury**
+8. Claude will ask you to connect — click **Authorize**
+9. Odoo opens briefly to confirm — click **Allow**
+
+Done. The 🔌 icon turns active. You can now ask Claude about your finances.
+
+> 💡 **Tip:** If asked for Client ID or Client Secret during setup, enter the **OAuth Client ID** and **MCP Token** values from step 4 respectively.
 
 ### On Claude Desktop (Mac/Windows app)
 
@@ -920,6 +950,52 @@ Send a WhatsApp to the Twilio sandbox number:
 > *"Treasury report"*
 
 You will receive the response on WhatsApp within seconds.
+
+> ⚠️ **WhatsApp response time:** The first message after a period of inactivity may take up to 60 seconds. You will receive a "⏳ Processing..." reply immediately, and the actual answer arrives as a separate WhatsApp message shortly after.
+
+> ⚠️ **Sandbox expiry:** The Twilio WhatsApp sandbox connection expires every 72 hours. If WhatsApp stops responding, re-send the join code (e.g. `join bright-flower`) to the Twilio sandbox number from your WhatsApp to reconnect.
+
+---
+
+## 8b. Free Trial & Your Own Anthropic API Key
+
+### Free trial
+
+Every new installation of IA Treasury Control includes a **free trial of up to 5 € of AI usage** on Uniasser's Anthropic account. During the trial:
+
+- You do **not** need an Anthropic account or API key
+- Leave the **Anthropic API Key** field in Settings completely blank
+- All AI queries (Claude via MCP, WhatsApp bot) are handled automatically
+
+When the free trial credit is exhausted, your queries will return a message explaining that the trial has ended and inviting you to add your own key.
+
+### Getting your own Anthropic API key
+
+To continue using IA Treasury Control without limits, get your own Anthropic API key:
+
+1. Go to **[console.anthropic.com](https://console.anthropic.com)**
+2. Click **Sign up** (free account — no credit card required to sign up)
+3. Once logged in, go to **API Keys** in the left menu
+4. Click **Create Key**
+5. Give it a name like `Odoo Treasury`
+6. Copy the key immediately — it starts with `sk-ant-...` and is shown **only once**
+7. In Odoo: go to **Settings → IA Treasury Control**
+8. Paste the key in the **Anthropic API Key** field
+9. Click **Save**
+
+> ⚠️ **Do not lose your key.** Anthropic shows it only when first created. If you lose it, generate a new one and update the Settings field.
+
+### Anthropic pricing
+
+Anthropic charges per use (pay-as-you-go, no monthly subscription required):
+
+- **Typical business use:** €5–15 per month depending on query volume
+- You can set spending limits in the Anthropic console to avoid surprises
+- Billing dashboard: [console.anthropic.com/settings/billing](https://console.anthropic.com/settings/billing)
+
+### If your key is invalid or expired
+
+Go to **Settings → IA Treasury Control → Anthropic API Key**, clear the field, and click **Save**. The system will fall back to Uniasser's shared account (or the free trial if still active). Then generate a new key from console.anthropic.com and paste it in.
 
 ---
 
@@ -1180,20 +1256,146 @@ powershell -ExecutionPolicy Bypass -File install_iatc.ps1
 
 ## 13. Troubleshooting
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| "License not found" | Wrong key format or no internet | Check key format `XXXX-XXXX-XXXX-XXXX`; ensure Odoo reaches `apps.uniasser.net` |
-| "Authentication failed" | Wrong login or API key | Use the exact email (not display name); regenerate the API key on this instance |
-| "301 Moved Permanently" | `web.base.url` uses HTTP | Set `web.base.url` to `https://...` in Settings → Technical → System Parameters |
-| Module cannot be uninstalled | Listed in `server_wide_modules` | Remove from `/etc/odoo.conf` → `server_wide_modules`, restart Odoo |
-| Section not shown in Settings | Developer mode off | Enable developer mode (Settings → bottom → "Activate developer mode") |
-| WhatsApp does not reply | Wrong webhook URL or Odoo not reachable | Verify the Webhook URL in Twilio matches the one in Odoo settings exactly |
-| WhatsApp sandbox expired | Sandbox link expires every 72h | Rejoin the sandbox by sending the join code to the Twilio number again |
+| Error / Symptom | Cause | Solution |
+|-----------------|-------|----------|
+| "License not found" | License key wrong format or not yet validated | Check key format is `XXXX-XXXX-XXXX-XXXX` → click **Validate license** in Settings |
+| "401 invalid x-api-key" | Anthropic API key is invalid or expired | Go to **Settings → IA Treasury Control → Anthropic API Key** → clear the field → Save. This restores the free trial (or Uniasser shared key). Or paste a valid key from console.anthropic.com |
+| "Authentication failed" (MCP) | Wrong login or API key | Use the exact Odoo user email; click **Generate API Key automatically** again |
+| "301 Moved Permanently" | `web.base.url` uses HTTP | Set `web.base.url` to `https://...` in **Settings → Technical → System Parameters** |
+| Module cannot be uninstalled | Listed in `server_wide_modules` | Remove `ia_agents_treasury_control` from `/etc/odoo.conf` → `server_wide_modules`, then restart Odoo |
+| Section not shown in Settings | Developer mode is off | Enable: **Settings → bottom of page → Activate developer mode** |
+| WhatsApp does not reply | Takes up to 60 seconds on first query | Wait — a "⏳ Processing..." message arrives first; the real answer comes as a separate WhatsApp message |
+| WhatsApp sandbox expired | Sandbox connection expires every 72 hours | Re-send the join code (e.g. `join bright-flower`) to the Twilio sandbox number from your WhatsApp |
+| Claude says "No tools available" | Integration not connected in this chat | Click the 🔌 icon in the chat → select Odoo Treasury → Authorize |
+| Free trial exhausted message | 5 € trial credit used up | Add your own Anthropic API key — see section 8b |
 
 ### Contact support
 
 - Email: support@uniasser.com
 - Web: [apps.uniasser.net](https://apps.uniasser.net)
+
+---
+
+---
+
+## 14. Ubuntu Linux 24.04 — Self-hosted notes
+
+If you are running Odoo on **Ubuntu 24.04 LTS** (self-hosted, not Odoo.sh), several extra steps are required that are not needed on Odoo.sh. This section summarises every issue found in practice and the exact fix.
+
+---
+
+### 14.1 Critical: set `db_name` in `/etc/odoo.conf`
+
+**Symptom:** The MCP endpoint `/mcp` returns 404, or the WhatsApp webhook `/iatc/webhook/whatsapp-twilio` never responds, even though the module is installed.
+
+**Cause:** When `db_name` is empty in the Odoo configuration file, Odoo does not register the custom routes from add-on modules at startup.
+
+**Fix:** Open `/etc/odoo.conf` (or `/etc/odoo18.conf`) and set the database name explicitly:
+
+```ini
+[options]
+db_name = your_database_name
+```
+
+Then restart Odoo:
+
+```bash
+sudo systemctl restart odoo
+# or for Odoo 18:
+sudo systemctl restart odoo18
+```
+
+> ⚠️ **This is the most common cause of the module appearing to be installed but not working at all.** Always check this first when routes are not responding.
+
+---
+
+### 14.2 `web.base.url` must be HTTPS
+
+**Symptom:** MCP clients refuse to connect, or you get SSL/redirect errors.
+
+**Cause:** The MCP protocol requires a secure HTTPS endpoint. If `web.base.url` starts with `http://`, it breaks the OAuth flow.
+
+**Fix:** In Odoo, go to **Settings → Technical → Parameters → System Parameters** and set:
+
+| Key | Value |
+|-----|-------|
+| `web.base.url` | `https://yourdomain.com` |
+
+If you only have HTTP locally (e.g. during development), you must set up a reverse proxy with a valid SSL certificate (nginx + Let's Encrypt).
+
+---
+
+### 14.3 WhatsApp webhook — Twilio must reach port 8069
+
+**Symptom:** WhatsApp messages arrive but no reply is ever sent; Twilio logs show connection errors or timeouts to your webhook URL.
+
+**Cause:** Twilio calls the webhook URL (e.g. `https://yourdomain.com/iatc/webhook/whatsapp-twilio`) using HTTP POST. On a typical self-hosted Ubuntu setup, Odoo listens on port **8069**, and nginx proxies port 443 → 8069.
+
+**Check:**
+1. Your nginx config must proxy `/iatc/` to `http://127.0.0.1:8069`
+2. Your firewall (ufw) must allow port 443 from outside
+
+Quick nginx snippet (add inside the `server { listen 443 ... }` block):
+
+```nginx
+location /iatc/ {
+    proxy_pass         http://127.0.0.1:8069;
+    proxy_set_header   Host $host;
+    proxy_set_header   X-Real-IP $remote_addr;
+    proxy_read_timeout 120s;
+}
+```
+
+> ⚠️ **Set `proxy_read_timeout` to at least 120 seconds.** Twilio itself times out after 15 seconds (which is why the module sends an immediate "⏳ Processing..." reply and then sends the real answer as a second WhatsApp message). The 120-second nginx timeout ensures the background processing is not killed prematurely.
+
+---
+
+### 14.4 "401 invalid x-api-key" error
+
+**Symptom:** Health check passes (Odoo connection is fine), but every AI query returns `401 invalid x-api-key`.
+
+**Cause:** An Anthropic API key was previously saved in Settings that is now invalid, expired, or revoked. The module sends this stored key to the AI server, which rejects it.
+
+**Fix (2 minutes):**
+
+1. In Odoo: **Settings → IA Treasury Control → Artificial Intelligence**
+2. Click **👁 View** next to **Anthropic API Key** — you will see the stored value
+3. **Clear the field** (select all, delete) and click **Save**
+4. The system automatically falls back to Uniasser's shared key (free trial)
+
+If you want to use your own valid key instead:
+
+1. Go to [console.anthropic.com](https://console.anthropic.com) → **API Keys → Create Key**
+2. Name it `Odoo Treasury`, copy the key (starts with `sk-ant-...`)
+3. Paste it in the **Anthropic API Key** field in Odoo Settings → Save
+
+---
+
+### 14.5 Odoo service user and PostgreSQL
+
+On Ubuntu 24.04, Odoo typically runs as the `odoo` OS user, which uses **Unix socket peer authentication** to connect to PostgreSQL. This works by default and requires no password.
+
+**Do not change** the PostgreSQL authentication method to `md5` or `scram-sha-256` for the `odoo` user — this would break the module's internal database reads. If you have changed it, revert `/etc/postgresql/16/main/pg_hba.conf` to:
+
+```
+local   all   odoo   peer
+```
+
+---
+
+### 14.6 Quick self-hosted checklist
+
+Run through this list whenever something is not working after installation:
+
+| # | Check | How |
+|---|-------|-----|
+| 1 | `db_name` set in `/etc/odoo.conf` | `grep db_name /etc/odoo.conf` |
+| 2 | Odoo service is running | `sudo systemctl status odoo` |
+| 3 | `web.base.url` starts with `https://` | Odoo → Settings → Technical → System Parameters |
+| 4 | nginx proxies `/iatc/` and `/mcp` to port 8069 | `nginx -T \| grep iatc` |
+| 5 | Port 443 open in ufw | `sudo ufw status` |
+| 6 | Anthropic API Key field is empty OR contains a valid `sk-ant-...` key | Odoo Settings → 👁 View |
+| 7 | License validated (green ✅ in Settings) | Click **Validate license** |
 
 ---
 
