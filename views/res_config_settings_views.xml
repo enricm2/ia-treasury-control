@@ -26,6 +26,8 @@
                                 </div>
                                 <div class="content-group mt8">
                                     <field name="iatc_license_key" password="True"/>
+                                    <button name="action_view_license_key" type="object"
+                                            string="👁 View" class="btn btn-link btn-sm mt4"/>
                                 </div>
                             </div>
                         </div>
@@ -60,6 +62,8 @@
                                     <field name="iatc_odoo_api_key" password="True"/>
                                     <button name="action_generate_odoo_api_key" type="object"
                                             string="Generate API Key" class="btn btn-primary mt8"/>
+                                    <button name="action_view_odoo_api_key" type="object"
+                                            string="👁 View" class="btn btn-link btn-sm mt4"/>
                                 </div>
                             </div>
                         </div>
@@ -91,6 +95,8 @@
                                     <field name="iatc_mcp_secret_token" password="True"/>
                                     <button name="action_generate_mcp_token" type="object"
                                             string="Regenerate token" class="btn btn-secondary mt8"/>
+                                    <button name="action_view_mcp_token" type="object"
+                                            string="👁 View" class="btn btn-link btn-sm mt4"/>
                                 </div>
                             </div>
                         </div>
@@ -133,6 +139,8 @@
                                 <span class="o_form_label">Anthropic API Key (Claude)</span>
                                 <div class="content-group mt8">
                                     <field name="iatc_anthropic_api_key" password="True"/>
+                                    <button name="action_view_anthropic_api_key" type="object"
+                                            string="👁 View" class="btn btn-link btn-sm"/>
                                     <field name="iatc_claude_model"
                                            attrs="{'invisible': [('iatc_llm_provider', '!=', 'claude')]}"/>
                                 </div>
@@ -144,6 +152,8 @@
                                 <span class="o_form_label">Gemini API Key (Google)</span>
                                 <div class="content-group mt8">
                                     <field name="iatc_gemini_api_key" password="True"/>
+                                    <button name="action_view_gemini_api_key" type="object"
+                                            string="👁 View" class="btn btn-link btn-sm"/>
                                     <field name="iatc_gemini_model"
                                            attrs="{'invisible': [('iatc_llm_provider', '!=', 'gemini')]}"/>
                                 </div>
@@ -155,6 +165,8 @@
                                 <span class="o_form_label">OpenAI API Key (ChatGPT)</span>
                                 <div class="content-group mt8">
                                     <field name="iatc_openai_api_key" password="True"/>
+                                    <button name="action_view_openai_api_key" type="object"
+                                            string="👁 View" class="btn btn-link btn-sm"/>
                                     <field name="iatc_openai_model"
                                            attrs="{'invisible': [('iatc_llm_provider', '!=', 'openai')]}"/>
                                 </div>
@@ -166,6 +178,8 @@
                                 <span class="o_form_label">Grok API Key (xAI)</span>
                                 <div class="content-group mt8">
                                     <field name="iatc_grok_api_key" password="True"/>
+                                    <button name="action_view_grok_api_key" type="object"
+                                            string="👁 View" class="btn btn-link btn-sm"/>
                                     <field name="iatc_grok_model"
                                            attrs="{'invisible': [('iatc_llm_provider', '!=', 'grok')]}"/>
                                 </div>
@@ -182,6 +196,8 @@
                                 <span class="o_form_label">Twilio Account SID</span>
                                 <div class="content-group mt8">
                                     <field name="iatc_twilio_account_sid" password="True"/>
+                                    <button name="action_view_twilio_account_sid" type="object"
+                                            string="👁 View" class="btn btn-link btn-sm mt4"/>
                                 </div>
                             </div>
                         </div>
@@ -191,6 +207,8 @@
                                 <span class="o_form_label">Twilio Auth Token</span>
                                 <div class="content-group mt8">
                                     <field name="iatc_twilio_auth_token" password="True"/>
+                                    <button name="action_view_twilio_auth_token" type="object"
+                                            string="👁 View" class="btn btn-link btn-sm mt4"/>
                                 </div>
                             </div>
                         </div>

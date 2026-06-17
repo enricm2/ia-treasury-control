@@ -243,6 +243,49 @@ class ResConfigSettings(models.TransientModel):
             },
         }
 
+    # ── View (reveal) actions for sensitive fields ─────────────────────────────
+
+    def _reveal(self, param_name: str, label: str):
+        """Generic helper: show a sensitive config value in a notification popup."""
+        val = self.env["ir.config_parameter"].sudo().get_param(param_name, "")
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": f"🔑 {label}",
+                "message": val if val else "(not configured)",
+                "type": "info",
+                "sticky": True,
+            },
+        }
+
+    def action_view_license_key(self):
+        return self._reveal(f"{_P}license_key", "License Key")
+
+    def action_view_odoo_api_key(self):
+        return self._reveal(f"{_P}odoo_api_key", "Odoo API Key")
+
+    def action_view_mcp_token(self):
+        return self._reveal(f"{_P}mcp_secret_token", "MCP Token (OAuth Client Secret)")
+
+    def action_view_anthropic_api_key(self):
+        return self._reveal(f"{_P}anthropic_api_key", "Anthropic API Key")
+
+    def action_view_gemini_api_key(self):
+        return self._reveal(f"{_P}gemini_api_key", "Gemini API Key")
+
+    def action_view_openai_api_key(self):
+        return self._reveal(f"{_P}openai_api_key", "OpenAI API Key")
+
+    def action_view_grok_api_key(self):
+        return self._reveal(f"{_P}grok_api_key", "Grok API Key")
+
+    def action_view_twilio_account_sid(self):
+        return self._reveal(f"{_P}twilio_account_sid", "Twilio Account SID")
+
+    def action_view_twilio_auth_token(self):
+        return self._reveal(f"{_P}twilio_auth_token", "Twilio Auth Token")
+
     def action_generate_odoo_api_key(self):
         """Genera automáticamente una Odoo API Key para el usuario actual y la guarda."""
         try:
