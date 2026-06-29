@@ -30,6 +30,7 @@
 | Acceso HTTPS | Tu Odoo debe ser accesible por HTTPS |
 | Licencia | Adquirida en [apps.uniasser.net](https://apps.uniasser.net) |
 | API key IA | Anthropic / Google / OpenAI (según el proveedor elegido) |
+| **CRÍTICO:** `db_name` configurado en archivo de configuración de Odoo | Ver paso crítico abajo |
 
 > ⚠️ **Importante:** El módulo NO almacena datos contables fuera de tu Odoo. La lógica de IA se ejecuta en servidores de Uniasser usando únicamente los datos que tú consultas en cada petición.
 
@@ -49,10 +50,10 @@
 ### Opción A — Odoo estándar (autohosting)
 
 1. Descarga el ZIP correspondiente a tu versión:
-   - Odoo 16: `ia_agents_treasury_control_odoo16_v16.0.1.7.0.zip`
-   - Odoo 17: `ia_agents_treasury_control_odoo17_v17.0.1.7.0.zip`
-   - Odoo 18: `ia_agents_treasury_control_odoo18_v18.0.1.7.0.zip`
-   - Odoo 19: `ia_agents_treasury_control_odoo19_v19.0.1.7.0.zip`
+   - Odoo 16: `ia_agents_treasury_control_odoo16_v16.0.1.7.3.zip`
+   - Odoo 17: `ia_agents_treasury_control_odoo17_v17.0.1.7.3.zip`
+   - Odoo 18: `ia_agents_treasury_control_odoo18_v18.0.1.7.3.zip`
+   - Odoo 19: `ia_agents_treasury_control_odoo19_v19.0.1.7.3.zip`
 
 2. En Odoo: **Ajustes → Activar modo desarrollador** (Ajustes → parte inferior de la página → "Activar modo desarrollador")
 
@@ -84,6 +85,42 @@ sudo -u odoo python3 /opt/odoo/odoo-bin -c /etc/odoo.conf \
 ---
 
 ## 4. Configuración inicial
+
+### ⚠️ PASO CRÍTICO: Configurar web.base.url
+
+**ANTES de continuar, debes configurar la URL de tu Odoo.** Esto es obligatorio para que el servidor MCP funcione correctamente.
+
+1. Ve a **Ajustes → Técnico → Parámetros del sistema**
+2. Busca el parámetro `web.base.url`
+3. Edítalo y pon la URL pública de tu Odoo con HTTPS:
+   - **Ejemplo:** `https://odoo16.uniasser.net`
+   - **Ejemplo:** `https://tudominio.com`
+   - **Ejemplo:** `https://tu-odoo.sh.odoo.com` (si usas Odoo.sh)
+4. **IMPORTANTE:** La URL debe empezar con `https://` (no `http://`)
+5. Guarda los cambios
+
+> ⚠️ **¿Por qué es esto necesario?**
+> El módulo usa esta URL para generar los endpoints de OAuth que Claude.ai necesita para conectarse. Si no configuras esto correctamente, la conexión MCP fallará con errores de "sign-in service".
+
+### ⚠️ PASO CRÍTICO: Configurar db_name en el archivo de configuración de Odoo
+
+**ANTES de continuar, debes configurar el nombre de la base de datos en tu archivo de configuración de Odoo.** Esto es obligatorio para que el OAuth de MCP funcione correctamente.
+
+1. Abre tu archivo de configuración de Odoo (típicamente `/etc/odoo.conf`, `/etc/odoo16.conf`, o similar)
+2. Busca o añade el parámetro `db_name`
+3. Establécelo al nombre exacto de tu base de datos:
+   ```ini
+   db_name = nombre_de_tu_base_de_datos
+   ```
+   - **Ejemplo:** `db_name = odood_db16CE`
+   - **Ejemplo:** `db_name = mycompany_prod`
+4. Guarda el archivo
+5. **Reinicia Odoo** para que el cambio surta efecto
+
+> ⚠️ **¿Por qué es esto necesario?**
+> El flujo OAuth de MCP usa el nombre de la base de datos como OAuth Client ID. Si el `db_name` en tu archivo de configuración no coincide con el nombre real de tu base de datos, la autenticación OAuth fallará con errores "Authorization with the MCP server failed". Esto es especialmente importante para instalaciones autoalojadas donde pueden existir múltiples bases de datos.
+
+---
 
 Ve a **Ajustes → IA Treasury Control** (aparece en el menú lateral de Ajustes).
 
@@ -596,6 +633,13 @@ powershell -ExecutionPolicy Bypass -File install_iatc.ps1
 - La API Key debe haberse generado en **esta instancia de Odoo** (no sirve la de otro servidor)
 - Si usas Odoo.sh, el usuario puede ser diferente al de otras instancias
 
+### ❌ "Authorization with the MCP server failed" o errores de "sign-in service"
+
+- **CRÍTICO:** Verifica que `db_name` está configurado en tu archivo de configuración de Odoo (ej: `/etc/odoo.conf`).
+- El parámetro `db_name` debe coincidir exactamente con el nombre real de tu base de datos.
+- Ejemplo: `db_name = nombre_de_tu_base_de_datos`
+- Reinicia Odoo después de cambiar el archivo de configuración.
+
 ### ❌ "301 Moved Permanently" en la conexión
 
 Tu Odoo tiene `web.base.url` configurado con `http://` en lugar de `https://`. Corrígelo:
@@ -675,6 +719,7 @@ Tienes instalada una versión anterior del módulo. Actualiza a v1.7.0 o superio
 | HTTPS access | Your Odoo must be reachable via HTTPS |
 | License | Purchased at [apps.uniasser.net](https://apps.uniasser.net) |
 | AI API key | **Optional** — a free trial (up to 5 €) is included. See section 8b. |
+| **CRITICAL:** `db_name` configured in Odoo configuration file | See critical step below |
 
 > ⚠️ **Important:** The module does NOT store accounting data outside your Odoo. All AI logic runs on Uniasser servers using only the data you query in each request.
 
@@ -694,10 +739,10 @@ Tienes instalada una versión anterior del módulo. Actualiza a v1.7.0 o superio
 ### Option A — Standard Odoo (self-hosted)
 
 1. Download the ZIP for your version:
-   - Odoo 16: `ia_agents_treasury_control_odoo16_v16.0.1.7.0.zip`
-   - Odoo 17: `ia_agents_treasury_control_odoo17_v17.0.1.7.0.zip`
-   - Odoo 18: `ia_agents_treasury_control_odoo18_v18.0.1.7.0.zip`
-   - Odoo 19: `ia_agents_treasury_control_odoo19_v19.0.1.7.0.zip`
+   - Odoo 16: `ia_agents_treasury_control_odoo16_v16.0.1.7.3.zip`
+   - Odoo 17: `ia_agents_treasury_control_odoo17_v17.0.1.7.3.zip`
+   - Odoo 18: `ia_agents_treasury_control_odoo18_v18.0.1.7.3.zip`
+   - Odoo 19: `ia_agents_treasury_control_odoo19_v19.0.1.7.3.zip`
 
 2. In Odoo: **Settings → Activate developer mode** (Settings → bottom of the page → "Activate developer mode")
 
@@ -729,6 +774,42 @@ sudo -u odoo python3 /opt/odoo/odoo-bin -c /etc/odoo.conf \
 ---
 
 ## 4. Initial configuration
+
+### ⚠️ CRITICAL STEP: Configure web.base.url
+
+**BEFORE proceeding, you MUST configure your Odoo URL.** This is mandatory for the MCP server to work correctly.
+
+1. Go to **Settings → Technical → System Parameters**
+2. Search for the parameter `web.base.url`
+3. Edit it and set your public Odoo URL with HTTPS:
+   - **Example:** `https://odoo16.uniasser.net`
+   - **Example:** `https://yourdomain.com`
+   - **Example:** `https://your-odoo.sh.odoo.com` (if using Odoo.sh)
+4. **IMPORTANT:** The URL must start with `https://` (not `http://`)
+5. Save the changes
+
+> ⚠️ **Why is this necessary?**
+> The module uses this URL to generate the OAuth endpoints that Claude.ai needs to connect. If you don't configure this correctly, the MCP connection will fail with "sign-in service" errors.
+
+### ⚠️ CRITICAL STEP: Configure db_name in Odoo configuration file
+
+**BEFORE proceeding, you MUST configure the database name in your Odoo configuration file.** This is mandatory for the MCP OAuth to work correctly.
+
+1. Open your Odoo configuration file (typically `/etc/odoo.conf`, `/etc/odoo16.conf`, or similar)
+2. Find or add the `db_name` parameter
+3. Set it to your exact database name:
+   ```ini
+   db_name = your_database_name
+   ```
+   - **Example:** `db_name = odood_db16CE`
+   - **Example:** `db_name = mycompany_prod`
+4. Save the file
+5. **Restart Odoo** for the change to take effect
+
+> ⚠️ **Why is this necessary?**
+> The MCP OAuth flow uses the database name as the OAuth Client ID. If the `db_name` in your configuration file doesn't match your actual database name, the OAuth authentication will fail with "Authorization with the MCP server failed" errors. This is especially important for self-hosted installations where multiple databases might exist.
+
+---
 
 Go to **Settings → IA Treasury Control** (shown in the Settings sidebar). Complete the five fields below in order. Total time: under 5 minutes.
 
@@ -1261,6 +1342,7 @@ powershell -ExecutionPolicy Bypass -File install_iatc.ps1
 | "License not found" | License key wrong format or not yet validated | Check key format is `XXXX-XXXX-XXXX-XXXX` → click **Validate license** in Settings |
 | "401 invalid x-api-key" | Anthropic API key is invalid or expired | Go to **Settings → IA Treasury Control → Anthropic API Key** → clear the field → Save. This restores the free trial (or Uniasser shared key). Or paste a valid key from console.anthropic.com |
 | "Authentication failed" (MCP) | Wrong login or API key | Use the exact Odoo user email; click **Generate API Key automatically** again |
+| "Authorization with the MCP server failed" or "sign-in service" errors | `db_name` not configured or mismatched | **CRITICAL:** Check that `db_name` is configured in your Odoo configuration file (e.g., `/etc/odoo.conf`). The `db_name` parameter must match your actual database name exactly. Example: `db_name = your_database_name`. Restart Odoo after changing the configuration file. |
 | "301 Moved Permanently" | `web.base.url` uses HTTP | Set `web.base.url` to `https://...` in **Settings → Technical → System Parameters** |
 | Module cannot be uninstalled | Listed in `server_wide_modules` | Remove `ia_agents_treasury_control` from `/etc/odoo.conf` → `server_wide_modules`, then restart Odoo |
 | Section not shown in Settings | Developer mode is off | Enable: **Settings → bottom of page → Activate developer mode** |

@@ -87,16 +87,26 @@
                         <div class="col-12 col-lg-6 o_setting_box">
                             <div class="o_setting_left_pane"/>
                             <div class="o_setting_right_pane">
+                                <span class="o_form_label">MCP Database</span>
+                                <div class="text-muted">
+                                    Select the database to use for MCP OAuth. Required for OAuth endpoints.
+                                </div>
+                                <div class="content-group mt8">
+                                    <field name="iatc_mcp_database"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
                                 <span class="o_form_label">MCP Token (OAuth Client Secret)</span>
                                 <div class="text-muted">
                                     Paste in 'OAuth Client Secret' when adding the MCP server in claude.ai.
                                 </div>
                                 <div class="content-group mt8">
-                                    <field name="iatc_mcp_secret_token" password="True"/>
+                                    <field name="iatc_mcp_secret_token" widget="text"/>
                                     <button name="action_generate_mcp_token" type="object"
                                             string="Regenerate token" class="btn btn-secondary mt8"/>
-                                    <button name="action_view_mcp_token" type="object"
-                                            string="👁 View" class="btn btn-link btn-sm mt4"/>
                                 </div>
                             </div>
                         </div>

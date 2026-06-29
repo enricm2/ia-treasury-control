@@ -36,6 +36,12 @@ class ResConfigSettings(models.TransientModel):
     )
 
     # ── MCP token and URL ─────────────────────────────────────────────────────
+    iatc_mcp_database = fields.Selection(
+        selection="_get_available_databases",
+        string="MCP Database",
+        config_parameter=f"{_P}mcp_database",
+        help="Select the database to use for MCP OAuth. This is required for OAuth endpoints to work correctly.",
+    )
     iatc_mcp_secret_token = fields.Char(
         string="MCP Token (OAuth Client Secret)",
         config_parameter=f"{_P}mcp_secret_token",
@@ -157,15 +163,26 @@ class ResConfigSettings(models.TransientModel):
 
     # ── Computed ──────────────────────────────────────────────────────────────
 
-    @api.depends("iatc_mcp_secret_token")
+    def _get_available_databases(self):
+        """Return list of available databases for the selection field."""
+        try:
+            import odoo.service.db as db_service
+            dbs = db_service.list_dbs(True)
+            return [(db, db) for db in dbs]
+        except Exception:
+            # Fallback: return current database
+            return [(self.env.cr.dbname, self.env.cr.dbname)]
+
+    @api.depends("iatc_mcp_secret_token", "iatc_mcp_database")
     def _compute_mcp_info(self):
         icp = self.env["ir.config_parameter"].sudo()
         base_url = icp.get_param("web.base.url", "").rstrip("/")
         if base_url.startswith("http://"):
             base_url = "https://" + base_url[7:]
-        db_name = self.env.cr.dbname
         for rec in self:
             rec.iatc_mcp_endpoint_url = f"{base_url}/mcp"
+            # Use configured MCP database if set, otherwise fall back to current database
+            db_name = rec.iatc_mcp_database or self.env.cr.dbname
             rec.iatc_mcp_oauth_client_id = db_name
 
     @api.depends("iatc_license_key")
@@ -183,7 +200,7 @@ class ResConfigSettings(models.TransientModel):
                 data = _json.dumps({
                     "license_key": key,
                     "instance_uuid": self.env.cr.dbname,
-                    "module_version": "saas",
+                    "module_version": "16.0.1.7.1",
                 }).encode()
                 req = urllib.request.Request(
                     "https://apps.uniasser.net/licencias/api/v1/validate",
@@ -191,13 +208,23 @@ class ResConfigSettings(models.TransientModel):
                     headers={"Content-Type": "application/json"},
                     method="POST",
                 )
-                with urllib.request.urlopen(req, timeout=8) as resp:
+                with urllib.request.urlopen(req, timeout=15) as resp:
                     info = _json.loads(resp.read())
                 rec.iatc_license_status = "✅ Active"
                 rec.iatc_license_customer = info.get("customer", "")
                 rec.iatc_license_expires = info.get("expires", "")
-            except Exception:
-                rec.iatc_license_status = "❌ Inactive or expired"
+            except urllib.error.HTTPError as exc:
+                _logger.error("License validation HTTP error: %s", exc)
+                try:
+                    error_detail = _json.loads(exc.read()).get("detail", str(exc))
+                    rec.iatc_license_status = f"❌ Error: {error_detail}"
+                except Exception:
+                    rec.iatc_license_status = f"❌ HTTP {exc.code}"
+                rec.iatc_license_customer = ""
+                rec.iatc_license_expires = ""
+            except Exception as exc:
+                _logger.error("License validation error: %s", exc)
+                rec.iatc_license_status = "❌ Connection error"
                 rec.iatc_license_customer = ""
                 rec.iatc_license_expires = ""
 
@@ -264,9 +291,6 @@ class ResConfigSettings(models.TransientModel):
 
     def action_view_odoo_api_key(self):
         return self._reveal(f"{_P}odoo_api_key", "Odoo API Key")
-
-    def action_view_mcp_token(self):
-        return self._reveal(f"{_P}mcp_secret_token", "MCP Token (OAuth Client Secret)")
 
     def action_view_anthropic_api_key(self):
         return self._reveal(f"{_P}anthropic_api_key", "Anthropic API Key")

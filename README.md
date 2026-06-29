@@ -23,11 +23,48 @@ This module installs a lightweight MCP (Model Context Protocol) server inside yo
 - Odoo 16, 17, 18, 19, or Odoo.sh
 - A valid license key from [apps.uniasser.net](https://apps.uniasser.net)
 - An Odoo API key (generated in Odoo settings — see step 3)
+- **CRITICAL:** `db_name` parameter configured in your Odoo configuration file (see critical step above)
 - *(Optional)* An Anthropic API key for AI-generated narrative reports
 
 ---
 
 ## Installation
+
+### ⚠️ CRITICAL: Configure web.base.url first
+
+**BEFORE installing or configuring the module, you MUST configure your Odoo URL.** This is mandatory for the MCP server to work correctly.
+
+1. Go to **Settings → Technical → System Parameters**
+2. Search for the parameter `web.base.url`
+3. Edit it and set your public Odoo URL with HTTPS:
+   - **Example:** `https://odoo16.uniasser.net`
+   - **Example:** `https://yourdomain.com`
+   - **Example:** `https://your-odoo.sh.odoo.com` (if using Odoo.sh)
+4. **IMPORTANT:** The URL must start with `https://` (not `http://`)
+5. Save the changes
+
+> ⚠️ **Why is this necessary?**
+> The module uses this URL to generate the OAuth endpoints that Claude.ai needs to connect. If you don't configure this correctly, the MCP connection will fail with "sign-in service" errors.
+
+### ⚠️ CRITICAL: Configure db_name in Odoo configuration file
+
+**BEFORE installing or configuring the module, you MUST configure the database name in your Odoo configuration file.** This is mandatory for the MCP OAuth to work correctly.
+
+1. Open your Odoo configuration file (typically `/etc/odoo.conf`, `/etc/odoo16.conf`, or similar)
+2. Find or add the `db_name` parameter
+3. Set it to your exact database name:
+   ```ini
+   db_name = your_database_name
+   ```
+   - **Example:** `db_name = odood_db16CE`
+   - **Example:** `db_name = mycompany_prod`
+4. Save the file
+5. **Restart Odoo** for the change to take effect
+
+> ⚠️ **Why is this necessary?**
+> The MCP OAuth flow uses the database name as the OAuth Client ID. If the `db_name` in your configuration file doesn't match your actual database name, the OAuth authentication will fail with "Authorization with the MCP server failed" errors. This is especially important for self-hosted installations where multiple databases might exist.
+
+---
 
 ### Step 1 — Install the module
 
@@ -226,7 +263,7 @@ Once connected, Claude.ai has access to these tools:
 ## Troubleshooting
 
 ### "License not configured"
-→ Go to Settings → IA Treasury Control → License and enter your key.
+ Go to Settings → IA Treasury Control → License and enter your key.
 
 ### "Odoo API Key not configured"
 → Follow Step 3 above to generate and configure an API key.
@@ -234,6 +271,12 @@ Once connected, Claude.ai has access to these tools:
 ### "Authentication failed. Check odoo_login and odoo_api_key"
 → Verify that the login name matches the user who generated the API key.
 → For Odoo.sh: use the user's **email address** as login, not just the username.
+
+### "Authorization with the MCP server failed" or "sign-in service" errors
+→ **CRITICAL:** Check that `db_name` is configured in your Odoo configuration file (e.g., `/etc/odoo.conf`).
+→ The `db_name` parameter must match your actual database name exactly.
+→ Example: `db_name = your_database_name`
+→ Restart Odoo after changing the configuration file.
 
 ### "Could not connect to Uniasser server"
 → Check that your Odoo instance has outbound HTTPS access (port 443).
