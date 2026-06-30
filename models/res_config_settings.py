@@ -1,12 +1,14 @@
 """IA Treasury Control (MCP) — configuration settings."""
 from __future__ import annotations
 
+import logging
 import secrets
 import urllib.request
 import json as _json
 
 from odoo import api, fields, models
 
+_logger = logging.getLogger(__name__)
 _P = "ia_agents_treasury_control."
 
 
